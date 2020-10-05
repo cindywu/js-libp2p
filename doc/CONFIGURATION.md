@@ -20,6 +20,7 @@
       - [Customizing DHT](#customizing-dht)
       - [Setup with Content and Peer Routing](#setup-with-content-and-peer-routing)
       - [Setup with Relay](#setup-with-relay)
+      - [Setup with Rendezvous](#setup-with-rendezvous)
       - [Setup with Keychain](#setup-with-keychain)
       - [Configuring Dialing](#configuring-dialing)
       - [Configuring Connection Manager](#configuring-connection-manager)
@@ -419,6 +420,68 @@ const node = await Libp2p.create({
       hop: {
         enabled: true,         // Allows you to be a relay for other peers
         active: true           // You will attempt to dial destination peers if you are not connected to them
+      }
+    }
+  }
+})
+```
+
+#### Setup with Rendezvous
+
+You will need to setup a rendezvous server, which will be used by rendezvous client nodes.
+
+A rendezvous server can be configured as follows:
+
+```js
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
+const { NOISE } = require('libp2p-noise')
+const Rendezvous = require('libp2p-rendezvous')
+
+const node = await Libp2p.create({
+  modules: {
+    transport: [TCP],
+    streamMuxer: [MPLEX],
+    connEncryption: [NOISE],
+    rendezvous: Rendezvous
+  },
+  config: {
+    rendezvous: {              // Rendezvous options (this config is part of libp2p core configurations)
+      server: {
+        enabled: true,         // Allows you to be a rendezvous server for other peers
+        gcInterval: 3e5        // Interval for gc to check outdated rendezvous registrations
+      }
+    }
+  }
+})
+```
+
+A rendezvous client only needs the rendezvous module. However, it will need to discover and get connected with a rendezvous server. A good option is to leverage the bootstrap module for this.
+
+```js
+const Libp2p = require('libp2p')
+const TCP = require('libp2p-tcp')
+const MPLEX = require('libp2p-mplex')
+const { NOISE } = require('libp2p-noise')
+const Rendezvous = require('libp2p-rendezvous')
+const Bootstrap = require('libp2p-bootstrap')
+
+const node = await Libp2p.create({
+  modules: {
+    transport: [TCP],
+    streamMuxer: [MPLEX],
+    connEncryption: [NOISE],
+    rendezvous: Rendezvous,
+    peerDiscovery: [Bootstrap]
+  },
+  config: {
+    peerDiscovery: {
+      bootstrap: {
+        enabled: true,
+        list: [
+          // Insert rendezvous servers multiaddrs
+        ]
       }
     }
   }
