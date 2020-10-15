@@ -6,6 +6,11 @@ const RelayConstants = require('./circuit/constants')
 
 const { FaultTolerance } = require('./transport-manager')
 
+// TODO: move to utils
+// const privateAddressAnnounceFilter = (multiaddrs) => {
+//   return multiaddrs.filter((ma) => !isPrivate(ma))
+// }
+
 const DefaultConfig = {
   addresses: {
     listen: [],
